@@ -4,10 +4,20 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
+const autoIncrement = require('mongoose-auto-increment');
+
+const mongoose = require('mongoose');
+const connectUri = "mongodb+srv://lorem:102938abC@vyboina-xzst9.mongodb.net/records?retryWrites=true";
+
+mongoose.connect(connectUri).then(() => {
+    console.log('Database connection successful');
+}).catch(err => {
+    console.error('Database connection error', err);
+})
+
+autoIncrement.initialize(mongoose.connection);
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var testAPIRouter = require("./routes/testAPI");
 var app = express();
 
 // view engine setup
@@ -21,9 +31,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use("/testAPI", testAPIRouter);
+app.get("/", (req, res) => {
+    const fileDirectory = path.join(__dirname, "public");
+
+    res.sendFile("index.html", { root: fileDirectory }, err => {
+        res.end();
+    });
+});
+
+app.use(indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
