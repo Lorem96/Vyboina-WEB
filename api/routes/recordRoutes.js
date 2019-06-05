@@ -13,7 +13,7 @@ record.route('/')
             });
     })
     .post((req, res) => {
-        recordService.addRecord(req.body)
+        recordService.create(req.body)
             .then(record => {
                 res.send(record);
             })
