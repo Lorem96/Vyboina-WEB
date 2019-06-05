@@ -1,7 +1,8 @@
-import * as types from './actionTypes';
+import * as actionTypes from './actionTypes';
 
-export const clearCalculatedData = () => {
-    return (dispatch) => {
-        dispatch({ type: types.FETCH_MAP_DATA });
-    }
+export function getPropertyInfoById(id) {
+    return {
+        type: actionTypes.FETCH_MAP_DATA,
+        payload: id
+    };
 }

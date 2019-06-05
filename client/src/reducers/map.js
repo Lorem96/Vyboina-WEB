@@ -3,7 +3,7 @@ import * as types from '../actions/actionTypes';
 const initialState = {
     currentData: {},
     dataFetching: false,
-    dataFetchingError: ''
+    dataFetchingError: {}
 };
 
 const map = (state = initialState, action = {}) => {

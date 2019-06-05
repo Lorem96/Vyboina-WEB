@@ -7,24 +7,26 @@ import createSagaMiddleware from 'redux-saga';
 import * as reducers from '../src/reducers';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-
+import { composeWithDevTools } from 'redux-devtools-extension';
+import rootSaga from './sagas';
 const reducer = combineReducers(reducers);
 const sagaMiddleware = createSagaMiddleware();
 const rootElement = document.getElementById('root');
 const middleware = [reduxThunk, sagaMiddleware];
 const store = createStore(
     reducer,
-    applyMiddleware(...middleware)
+    composeWithDevTools(
+        applyMiddleware(...middleware)
+    )
 );
+sagaMiddleware.run(rootSaga);
 
 ReactDOM.render(
     <Provider store={store}>
         <App />
     </Provider>,
     rootElement
-)
-
-ReactDOM.render(<App />, document.getElementById('root'));
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
