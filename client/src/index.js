@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore, combineReducers } from 'redux';
+import { createStore, combineReducers, applyMiddleware } from 'redux';
+import reduxThunk from 'redux-thunk';
 import * as reducers from '../src/reducers';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 const reducer = combineReducers(reducers);
-const rootElement = document.getElementById('root')
+const rootElement = document.getElementById('root');
+const middleware = [reduxThunk];
 const store = createStore(
-    reducer
+    reducer,
+    applyMiddleware(...middleware)
 );
 
 ReactDOM.render(
