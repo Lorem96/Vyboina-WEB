@@ -1,8 +1,22 @@
 import React, { Component } from "react";
-import * as mapActions from '../actions/map';
+import ReactMapGL from "react-map-gl";
+import * as mapActions from "../actions/map";
 import { connect } from "react-redux";
 
 class MapViewScreen extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            viewport: {
+                width: 800,
+                height: 800,
+                latitude: 37.7577,
+                longitude: -122.4376,
+                zoom: 8
+            }
+        };
+    }
 
     componentWillMount() {
         const { getPropertyInfoById } = this.props;
@@ -14,7 +28,12 @@ class MapViewScreen extends Component {
         const { currentData } = this.props;
         return (
             <div>
-                {JSON.stringify(currentData)}
+                <ReactMapGL
+                    width="100%"
+                    height="100%"
+                    {...this.state.viewport}
+                    onViewportChange={(viewport) => this.setState({ viewport })}
+                />
             </div>
         )
     }

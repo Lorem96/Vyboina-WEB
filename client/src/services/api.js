@@ -1,10 +1,10 @@
 import axios from "axios";
-const apiAddress = 'http://127.0.0.1:9000/api'
+const API_URL = process.env.REACT_APP_API_URL;
 
 class Api {
     constructor() {
         this.adapter = axios.create({
-            baseURL: apiAddress
+            baseURL: API_URL
         });
     }
 
