@@ -1,13 +1,14 @@
+require('dotenv').config()
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require("cors");
-const autoIncrement = require('mongoose-auto-increment');
 
+const autoIncrement = require('mongoose-auto-increment');
 const mongoose = require('mongoose');
-const connectUri = "mongodb+srv://lorem:102938abC@vyboina-xzst9.mongodb.net/records?retryWrites=true";
+const connectUri = process.env.MONGO_CONNECT_URL;
 
 mongoose.connect(connectUri).then(() => {
     console.log('Database connection successful');
