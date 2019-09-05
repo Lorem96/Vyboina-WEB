@@ -1,3 +1,6 @@
+/* eslint-disable prefer-template */
+import KalmanFilter from 'kalmanjs';
+
 const _ = require('lodash');
 
 export const LINE_SHAPE = 'LineString';
@@ -19,14 +22,31 @@ const getGeoJsonTemplate = (color, shape) => {
     })
 }
 
-const getGeoJsonResult = (rawDataWithColors, shape) => {
-    return rawDataWithColors.reduce((geoJson, point) => {
+const filterDataWithKalman = (rawDataWithColors) => {
+    const kfLong = new KalmanFilter();
+    const kfLat = new KalmanFilter();
+    const result = rawDataWithColors.map((point) => {
+        const pointCoords = point.coords;
+        const filteredLong = kfLong.filter(parseFloat(pointCoords[0]));
+        const filteredLat = kfLat.filter(parseFloat(pointCoords[1]));
+
+        return {
+            ...point,
+            coords: [filteredLong, filteredLat]
+        };
+    });
+
+    return result;
+}
+
+const getGeoJsonResult = (filteredDataWithColors, shape) => {
+    return filteredDataWithColors.reduce((geoJson, point) => {
         const pointColor = point.color;
         const nextKeyNumber = geoJson.keyNumber + 1;
         const long = parseFloat(point.coords[0]);
         const lat = parseFloat(point.coords[1]);
         const pointCoords = [long, lat];
-        const nextPoint = rawDataWithColors[nextKeyNumber];
+        const nextPoint = filteredDataWithColors[nextKeyNumber];
         let nextPointCoords;
 
         if (!nextPoint) {
@@ -36,7 +56,7 @@ const getGeoJsonResult = (rawDataWithColors, shape) => {
         }
 
         if (shape === POINT_SHAPE) {
-            const pointsWithSameColorsIndex = geoJson.data.findIndex((elem, index) => elem.color === pointColor && index != geoJson.keyNumber)
+            const pointsWithSameColorsIndex = geoJson.data.findIndex((elem, index) => elem.color === pointColor && index !== geoJson.keyNumber)
 
             if (pointsWithSameColorsIndex !== -1) {
                 geoJson.data[pointsWithSameColorsIndex].features[0].geometry.coordinates.push([...pointCoords]);
@@ -51,7 +71,6 @@ const getGeoJsonResult = (rawDataWithColors, shape) => {
             return { data: geoJson.data, keyNumber: geoJson.keyNumber + 1 };
         }
 
-
         const newGeoJson = getGeoJsonTemplate(pointColor, shape);
 
         newGeoJson.features[0].geometry.coordinates.push(pointCoords, nextPointCoords);
@@ -65,12 +84,12 @@ const getGeoJsonResult = (rawDataWithColors, shape) => {
     }, { keyNumber: 0, data: [] })
 }
 
-const getMaxMinValues = (data, selector) => {
-    const firstObjectValue = data[Object.keys(data)[0]][selector];
+const getMaxMinValues = (data) => {
+    const firstObjectValue = data[Object.keys(data)[0]];
 
     return Object.keys(data).reduce((accum, objectKey) => {
-        const maxValue = data[objectKey][selector] > accum.maxValue ? data[objectKey][selector] : accum.maxValue;
-        const minValue = data[objectKey][selector] < accum.minValue ? data[objectKey][selector] : accum.minValue;
+        const maxValue = data[objectKey] > accum.maxValue ? data[objectKey] : accum.maxValue;
+        const minValue = data[objectKey] < accum.minValue ? data[objectKey] : accum.minValue;
 
         return { maxValue, minValue };
     }, { maxValue: 0, minValue: firstObjectValue })
@@ -91,14 +110,10 @@ const rgbToHex = (r, g, b) => {
     return "#" + red + green + blue;
 }
 
-const setColors = (maxValue, minValue, rawData, selector) => {
+const setColors = (maxValue, minValue, rawData) => {
     return Object.keys(rawData).map((key) => {
-        const point = _.cloneDeep(rawData[key]);
-        let weight = ((point[selector] - minValue) / (maxValue - minValue));
-
-        if (weight < 0) {
-            weight = 0;
-        }
+        const point = rawData[key];
+        let weight = ((point - minValue) / (maxValue - minValue));
 
         if (minValue === maxValue) {
             weight = 0.5;
@@ -107,23 +122,41 @@ const setColors = (maxValue, minValue, rawData, selector) => {
         const red = Math.ceil(255 * weight);
         const green = Math.ceil(255 - red);
 
-        point.coords = key.split(',');
-        point.color = rgbToHex(red, green, 0);
-        point.weight = weight;
-
-        return point;
+        return {
+            coords: key.split(','),
+            color: rgbToHex(red, green, 0),
+            weight
+        };
     })
 }
 
-const convertRawDataToGeoJson = (rawData, selector = 'z', shape = LINE_SHAPE, cb) => {
-    if (rawData && Object.keys(rawData).length) {
-        const { maxValue, minValue } = getMaxMinValues(rawData, selector);
-        const rawDataWithColors = setColors(maxValue, minValue, rawData, selector);
-        const finalResult = getGeoJsonResult(rawDataWithColors, shape);
+const startAlgoritm = (rawData) => {
+    const data = _.cloneDeep(rawData);
+    return Object.keys(data).reduce((acum, currentKey) => {
+        const { x, y, z } = data[currentKey];
+        const calcRes = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+        const finalObject = {
+            [currentKey]: calcRes
+        }
 
-        cb({ coords: [...finalResult.data], shape });
+        return {
+            ...acum,
+            ...finalObject
+        }
+    }, {});
+}
+
+const convertRawDataToGeoJson = (rawData, shape = LINE_SHAPE) => {
+    if (rawData && Object.keys(rawData).length) {
+        const data = startAlgoritm(rawData);
+        const { maxValue, minValue } = getMaxMinValues(data);
+        const rawDataWithColors = setColors(maxValue, minValue, data);
+        const filteredDataWithColors = filterDataWithKalman(rawDataWithColors);
+        const finalResult = getGeoJsonResult(filteredDataWithColors, shape);
+
+        return ({ coords: [...finalResult.data], shape });
     } else {
-        cb({ coords: [], shape });
+        return ({ coords: [], shape });
     }
 }
 

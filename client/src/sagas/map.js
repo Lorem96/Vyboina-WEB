@@ -8,19 +8,18 @@ import * as actionTypes from '../actions/actionTypes';
 import api from "../services/api";
 
 export default function* mapSaga() {
-
     function* getMapData(action) {
-        console.log(action)
         try {
             const response = yield call(
                 api.sendRequest,
                 `/record/${action.payload}`,
                 "get"
             );
+            const { data } = response;
 
             yield put({
                 type: actionTypes.FETCH_MAP_DATA_SUCCESS,
-                payload: response
+                payload: data
             });
         } catch (err) {
             console.log(err);

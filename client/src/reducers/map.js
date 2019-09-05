@@ -2,6 +2,8 @@ import * as types from '../actions/actionTypes';
 
 const initialState = {
     currentData: {},
+    calculatedData: null,
+    selectedRawData: null,
     dataFetching: false,
     dataFetchingError: {}
 };
@@ -27,6 +29,12 @@ const map = (state = initialState, action = {}) => {
                 dataFetching: false,
                 currentData: {},
                 dataFetchingError: action.payload
+            }
+        }
+        case types.CALCULATE_DATA_SUCCESS: {
+            return {
+                ...state,
+                calculatedData: action.payload
             }
         }
         default:
