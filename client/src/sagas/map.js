@@ -8,11 +8,11 @@ import * as actionTypes from '../actions/actionTypes';
 import api from "../services/api";
 
 export default function* mapSaga() {
-    function* getMapData(action) {
+    function* getRecords() {
         try {
             const response = yield call(
                 api.sendRequest,
-                `/record/${action.payload}`,
+                `/record`,
                 "get"
             );
             const { data } = response;
@@ -32,6 +32,6 @@ export default function* mapSaga() {
     }
 
     yield all([
-        takeLatest(actionTypes.FETCH_MAP_DATA, getMapData)
+        takeLatest(actionTypes.FETCH_MAP_DATA, getRecords)
     ]);
 }

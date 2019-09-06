@@ -3,6 +3,7 @@ import ReactMapGL from "react-map-gl";
 import * as mapActions from "../actions/map";
 import { connect } from "react-redux";
 import MAP_STYLE from './map-style-basic-v8.json';
+// import MAP_STYLE from 'mapbox://styles/mapbox/streets-v11';
 
 class MapViewScreen extends Component {
     constructor(props) {
@@ -10,20 +11,19 @@ class MapViewScreen extends Component {
 
         this.state = {
             viewport: {
-                width: 800,
-                height: 800,
+                width: 1250,
+                height: 900,
                 zoom: 8
-            },
-            mapStyle: { ...MAP_STYLE }
+            }
         };
 
         this.showData = this.showData.bind(this);
     }
 
     componentWillMount() {
-        const { getPropertyInfoById } = this.props;
+        const { getRecords } = this.props;
 
-        getPropertyInfoById(6);
+        getRecords();
         this.locateUser();
     }
 
@@ -44,6 +44,10 @@ class MapViewScreen extends Component {
 
     showData() {
         const { calculatedData } = this.props;
+        if (!calculatedData) {
+            return { ...MAP_STYLE };
+        }
+
         const coords = calculatedData.coords;
 
         const { sources: newSources, layers: newLayers } = coords.reduce((accumulator, currentObj) => {
@@ -84,26 +88,24 @@ class MapViewScreen extends Component {
             id: 0
         });
 
-        const { layers, sources } = this.state.mapStyle;
+        const { layers, sources } = MAP_STYLE;
 
-        this.setState({
-            ...this.state,
-            mapStyle: {
-                ...this.state.mapStyle,
-                layers: [
-                    ...layers,
-                    ...newLayers
-                ],
-                sources: {
-                    ...sources,
-                    ...newSources
-                }
+        return ({
+            ...MAP_STYLE,
+            layers: [
+                ...layers,
+                ...newLayers
+            ],
+            sources: {
+                ...sources,
+                ...newSources
             }
+
         });
     }
 
     render() {
-        const { viewport, mapStyle } = this.state;
+        const { viewport } = this.state;
 
         return (
             <div>
@@ -111,11 +113,9 @@ class MapViewScreen extends Component {
                     width="100%"
                     height="100%"
                     {...viewport}
-                    mapStyle={mapStyle}
+                    mapStyle={this.showData()}
                     onViewportChange={(viewport) => this.setState({ viewport })}
                 />
-                <button onClick={this.showData} className="ui button">Click Here</button>
-                <button onClick={() => console.log(this.state.mapStyle)} className="ui button">Show</button>
             </div>
         )
     }
@@ -127,7 +127,7 @@ const mapStateToProps = ({ map }) => ({
 
 const mapDispatchToProps = dispatch => {
     return {
-        getPropertyInfoById: (id) => dispatch(mapActions.getPropertyInfoById(id))
+        getRecords: (id) => dispatch(mapActions.getRecords(id))
     };
 };
 

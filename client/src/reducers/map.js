@@ -1,9 +1,8 @@
 import * as types from '../actions/actionTypes';
 
 const initialState = {
-    currentData: {},
+    currentData: null,
     calculatedData: null,
-    selectedRawData: null,
     dataFetching: false,
     dataFetchingError: {}
 };
@@ -20,7 +19,7 @@ const map = (state = initialState, action = {}) => {
             return {
                 ...state,
                 dataFetching: false,
-                currentData: { ...action.payload }
+                currentData: [...action.payload]
             }
         }
         case types.FETCH_MAP_DATA_ERROR: {
