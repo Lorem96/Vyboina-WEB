@@ -132,18 +132,32 @@ const setColors = (maxValue, minValue, rawData) => {
 
 const startAlgoritm = (rawData) => {
     const data = _.cloneDeep(rawData);
-    return Object.keys(data).reduce((acum, currentKey) => {
-        const { x, y, z } = data[currentKey];
-        const calcRes = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
-        const finalObject = {
-            [currentKey]: calcRes
-        }
+
+    const result = Object.keys(data).reduce((acum, currentKey) => {
+        const currentSegment = data[currentKey];
+        const startCoords = currentSegment.startCoords.coords;
+        const endCoords = currentSegment.endCoords.coords;
+
+        currentSegment.accelerometerData = currentSegment.accelerometerData.map((accelerometerInfo) => {
+            const { x, y, z } = accelerometerInfo;
+
+            return Math.sqrt(x ** 2 + y ** 2 + z ** 2);
+        });
+
+        const { summValue } = currentSegment.accelerometerData.reduce((accum, acceleromValue) => {
+            return { summValue: accum.summValue + acceleromValue };
+        }, { summValue: 0 })
+
+        const propertyKey = `${startCoords.longitude},${startCoords.latitude}`;
+        const finalObject = { [propertyKey]: summValue }
 
         return {
             ...acum,
             ...finalObject
         }
     }, {});
+
+    return result;
 }
 
 const convertRawDataToGeoJson = (rawData, shape = LINE_SHAPE) => {

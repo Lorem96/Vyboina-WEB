@@ -11,9 +11,9 @@ class MapViewScreen extends Component {
 
         this.state = {
             viewport: {
-                width: 1250,
-                height: 900,
-                zoom: 8
+                zoom: 8,
+                width: window.innerWidth,
+                height: window.innerHeight
             }
         };
 

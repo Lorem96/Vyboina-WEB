@@ -4,7 +4,23 @@ import 'semantic-ui-css/semantic.min.css';
 
 function App() {
     return (
-        <HomePage />
+        {
+            let run2 = () => {
+                const resultArray = a.split(' ');
+                resultArray.reduce((accum, current) => {
+                    const b = current;
+                    const c = `${accum[accum.length]} ${current}`
+
+                    console.log(b, '\n', c)
+                    // accum.push(current.includes('px') ? current :`${accum[accum.length]} ${current}`);
+                    accum.push(b);
+                    return [...accum];
+                }, [])
+
+                return resultArray;
+            }
+        }
+        < HomePage />
     );
 }
 

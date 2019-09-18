@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Container, List, Divider } from 'semantic-ui-react'
+import { Container, List, Divider, Segment, Card } from 'semantic-ui-react'
 import RecordCard from './recordCard';
 import { connect } from "react-redux";
 import * as mapActions from "../actions/map";
@@ -7,14 +7,32 @@ import * as mapActions from "../actions/map";
 class RecordsList extends Component {
     render() {
         const { currentData, calculateData } = this.props;
-        const renderCards = () => (currentData.map((record) => <RecordCard key={record._id} {...record} calculateData={() => calculateData(record._id)} />));
-        const listStyle = { position: 'absolute', top: 20, right: 35, backgroundColor: 'white', width: '15%', height: '15%', overflow: 'auto' };
+        const renderCards = () => (currentData.map((record) => {
+            return (
+                <RecordCard
+                    key={record._id}
+                    {...record}
+                    calculateData={() => calculateData(record._id)}
+                />
+            )
+        }));
+        const listStyle = {
+            position: 'absolute',
+            top: 20, right: 35,
+            // backgroundColor: 'white',
+            width: '30vh',
+            // height: '15%',
+            maxHeight: '30vh',
+            overflow: 'auto'
+        };
 
         return (
             <Container>
-                <List divided relaxed style={listStyle}>
-                    {currentData ? renderCards() : 'No records'}
-                </List>
+                <Segment style={listStyle}>
+                    <Segment.Group>
+                        {currentData ? renderCards() : 'No records'}
+                    </Segment.Group>
+                </Segment>
             </Container>
         )
     }
